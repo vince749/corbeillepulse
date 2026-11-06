@@ -1,0 +1,21 @@
+CorbeillePulse
+
+ENGLISH
+Requires macOS 14 (Sonoma) or later, on Apple Silicon or Intel.
+
+1. Drag CorbeillePulse into the Applications folder.
+2. Open it. macOS blocks it the first time, because it is not notarized by Apple.
+3. Go to System Settings > Privacy & Security, then click "Open Anyway".
+4. Allow access to Finder when macOS asks: this is how the app reads the Trash.
+
+Optional: to count the size of folders in the Trash, add CorbeillePulse to System Settings > Privacy & Security > Full Disk Access.
+
+FRANÇAIS
+Il vous faut macOS 14 (Sonoma) ou plus récent, sur Apple Silicon ou Intel.
+
+1. Glissez CorbeillePulse dans le dossier Applications.
+2. Ouvrez-la. macOS la bloque la première fois, car elle n'est pas notariée par Apple.
+3. Allez dans Réglages Système > Confidentialité et sécurité, puis cliquez sur « Ouvrir quand même ».
+4. Autorisez l'accès à Finder quand macOS le demande : c'est ce qui permet de lire la Corbeille.
+
+Facultatif : pour que la taille des dossiers soit comptée, ajoutez CorbeillePulse dans Réglages Système > Confidentialité et sécurité > Accès complet au disque.

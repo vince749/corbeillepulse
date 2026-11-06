@@ -47,7 +47,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if window == nil {
             let view = PanelView(store: store, onEmpty: { [weak self] in self?.confirmAndEmpty() })
             let created = NSWindow(contentViewController: NSHostingController(rootView: view))
-            created.title = "Corbeille"
+            created.title = String(localized: "Corbeille")
             created.styleMask = [.titled, .closable, .miniaturizable, .resizable]
             created.setContentSize(NSSize(width: 460, height: 720))
             created.contentMinSize = NSSize(width: 390, height: 520)
@@ -64,11 +64,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = "Vider la corbeille ?"
-        alert.informativeText = "\(store.itemCount) élément(s), \(formatBytes(store.totalBytes)) : suppression définitive."
-        let confirm = alert.addButton(withTitle: "Vider la corbeille")
+        alert.messageText = String(localized: "Vider la corbeille ?")
+        alert.informativeText = String(
+            localized: "\(store.itemCount) élément(s), \(formatBytes(store.totalBytes)) : suppression définitive.")
+        let confirm = alert.addButton(withTitle: String(localized: "Vider la corbeille"))
         confirm.hasDestructiveAction = true
-        let cancel = alert.addButton(withTitle: "Annuler")
+        let cancel = alert.addButton(withTitle: String(localized: "Annuler"))
         // Entrée annule : une suppression définitive doit rester un geste délibéré.
         confirm.keyEquivalent = ""
         cancel.keyEquivalent = "\r"
@@ -77,7 +78,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Task {
             do {
                 let remaining = try await store.empty()
-                if remaining > 0 { showError("\(remaining) élément(s) n'ont pas pu être supprimés.") }
+                if remaining > 0 { showError(String(localized: "\(remaining) élément(s) n'ont pas pu être supprimés.")) }
             } catch {
                 showError(error.localizedDescription)
             }
@@ -87,7 +88,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func showError(_ message: String) {
         let alert = NSAlert()
         alert.alertStyle = .critical
-        alert.messageText = "Échec du vidage"
+        alert.messageText = String(localized: "Échec du vidage")
         alert.informativeText = message
         alert.runModal()
     }
@@ -97,16 +98,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let appItem = NSMenuItem()
         let appMenu = NSMenu()
-        appMenu.addItem(withTitle: "Masquer CorbeillePulse", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
+        appMenu.addItem(withTitle: String(localized: "Masquer CorbeillePulse"), action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
         appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "Quitter CorbeillePulse", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        appMenu.addItem(withTitle: String(localized: "Quitter CorbeillePulse"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         appItem.submenu = appMenu
         main.addItem(appItem)
 
         let windowItem = NSMenuItem()
-        let windowMenu = NSMenu(title: "Fenêtre")
-        windowMenu.addItem(withTitle: "Fermer", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
-        windowMenu.addItem(withTitle: "Réduire", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
+        let windowMenu = NSMenu(title: String(localized: "Fenêtre"))
+        windowMenu.addItem(withTitle: String(localized: "Fermer"), action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
+        windowMenu.addItem(withTitle: String(localized: "Réduire"), action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
         windowItem.submenu = windowMenu
         main.addItem(windowItem)
         NSApp.windowsMenu = windowMenu

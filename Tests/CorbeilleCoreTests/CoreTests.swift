@@ -4,11 +4,13 @@ import Testing
 @testable import CorbeilleCore
 
 @Test func formatsBytesLikeTheOriginalApp() {
-    #expect(formatBytes(0) == "0 o")
-    #expect(formatBytes(512) == "512 o")
-    #expect(formatBytes(1536) == "1.5 Ko")
-    #expect(formatBytes(150 * 1024 * 1024) == "150 Mo")
-    #expect(formatBytes(5_809_000_000) == "5.4 Go")
+    let fr = ByteUnits.french
+    #expect(formatBytes(0, units: fr) == "0 o")
+    #expect(formatBytes(512, units: fr) == "512 o")
+    #expect(formatBytes(1536, units: fr) == "1.5 Ko")
+    #expect(formatBytes(150 * 1024 * 1024, units: fr) == "150 Mo")
+    #expect(formatBytes(5_809_000_000, units: fr) == "5.4 Go")
+    #expect(formatBytes(5_809_000_000, units: ByteUnits.english) == "5.4 GB")
 }
 
 @Test func recognisesKinds() {
@@ -109,5 +111,5 @@ func readsTheRealTrash() async throws {
     let scanner = TrashScanner()
     let snapshot = try await scanner.scan()
     #expect(!snapshot.accessBlocked)
-    print("live trash: \(snapshot.itemCount) items, \(formatBytes(snapshot.totalBytes))")
+    print("live trash: \(snapshot.itemCount) items, \(formatBytes(snapshot.totalBytes, units: ByteUnits.english))")
 }

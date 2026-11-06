@@ -13,6 +13,7 @@ mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 cp -X "$binary" "$app/Contents/MacOS/CorbeillePulse"
 cp -X Resources/Info.plist "$app/Contents/Info.plist"
 cp -X Resources/app-icon.icns "$app/Contents/Resources/app-icon.icns"
+cp -R Resources/en.lproj Resources/fr.lproj "$app/Contents/Resources/"
 printf 'APPL????' > "$app/Contents/PkgInfo"
 
 codesign --force --sign - --options runtime --entitlements Resources/CorbeillePulse.entitlements "$app"

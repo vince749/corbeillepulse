@@ -81,9 +81,18 @@ public enum Threshold {
     }
 }
 
-public func formatBytes(_ bytes: Int64) -> String {
-    if bytes <= 0 { return "0 o" }
-    let units = ["o", "Ko", "Mo", "Go", "To"]
+public enum ByteUnits {
+    public static let french = ["o", "Ko", "Mo", "Go", "To"]
+    public static let english = ["B", "KB", "MB", "GB", "TB"]
+
+    /// French units ("Mo") when the app runs in French, English ones ("MB") otherwise.
+    public static var current: [String] {
+        Bundle.main.preferredLocalizations.first == "fr" ? french : english
+    }
+}
+
+public func formatBytes(_ bytes: Int64, units: [String] = ByteUnits.current) -> String {
+    if bytes <= 0 { return "0 \(units[0])" }
     let index = min(units.count - 1, Int(floor(log(Double(bytes)) / log(1024))))
     let value = Double(bytes) / pow(1024, Double(index))
     if value >= 100 || index == 0 { return "\(Int(value.rounded())) \(units[index])" }

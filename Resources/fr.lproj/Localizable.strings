@@ -1,0 +1,2 @@
+/* French interface: the source strings are already French, so no translation is needed.
+   This file makes macOS pick French on a Mac set to French. */

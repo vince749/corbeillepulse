@@ -8,8 +8,8 @@ public enum TrashError: Error, Equatable, LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case .notAuthorized: "CorbeillePulse n'est pas autorisée à contrôler le Finder."
-        case .timedOut: "Le Finder n'a pas répondu à temps."
+        case .notAuthorized: String(localized: "CorbeillePulse n'est pas autorisée à contrôler le Finder.", bundle: .main)
+        case .timedOut: String(localized: "Le Finder n'a pas répondu à temps.", bundle: .main)
         case .scriptFailed(let message): message
         }
     }

@@ -13,10 +13,10 @@ struct PanelView: View {
     }
 
     private var statusLabel: String {
-        if store.totalBytes <= 0 { return "Corbeille vide" }
-        if store.fillRatio >= 1 { return "Débordement !" }
-        if store.fillRatio >= 0.75 { return "Presque pleine" }
-        return "En remplissage"
+        if store.totalBytes <= 0 { return String(localized: "Corbeille vide") }
+        if store.fillRatio >= 1 { return String(localized: "Débordement !") }
+        if store.fillRatio >= 0.75 { return String(localized: "Presque pleine") }
+        return String(localized: "En remplissage")
     }
 
     private var overflowPercent: Int {
@@ -36,7 +36,7 @@ struct PanelView: View {
                 gauge
                 stats
                 Button(role: .destructive, action: onEmpty) {
-                    Label(store.isEmptying ? "Vidage…" : "Vider la corbeille", systemImage: "trash")
+                    Label(store.isEmptying ? String(localized: "Vidage…") : String(localized: "Vider la corbeille"), systemImage: "trash")
                         .frame(maxWidth: .infinity)
                 }
                 .controlSize(.large)
@@ -118,7 +118,7 @@ struct PanelView: View {
         .fixedSize(horizontal: false, vertical: true)
     }
 
-    private func stat(_ label: String, _ value: String) -> some View {
+    private func stat(_ label: LocalizedStringKey, _ value: String) -> some View {
         VStack(spacing: 2) {
             Text(value).font(.title3.weight(.semibold)).monospacedDigit()
             Text(label).font(.callout).foregroundStyle(.secondary)

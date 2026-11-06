@@ -15,10 +15,10 @@ final class StatusBarController: NSObject {
         super.init()
 
         let menu = NSMenu()
-        menu.addItem(makeItem("Ouvrir CorbeillePulse", #selector(openClicked)))
-        menu.addItem(makeItem("Vider la corbeille…", #selector(emptyClicked)))
+        menu.addItem(makeItem(String(localized: "Ouvrir CorbeillePulse"), #selector(openClicked)))
+        menu.addItem(makeItem(String(localized: "Vider la corbeille…"), #selector(emptyClicked)))
         menu.addItem(.separator())
-        menu.addItem(makeItem("Quitter", #selector(quitClicked)))
+        menu.addItem(makeItem(String(localized: "Quitter"), #selector(quitClicked)))
         item.menu = menu
         update()
     }
@@ -40,13 +40,13 @@ final class StatusBarController: NSObject {
         button.imagePosition = .imageLeading
 
         if store.accessBlocked {
-            button.toolTip = "CorbeillePulse : accès à la corbeille requis"
+            button.toolTip = String(localized: "CorbeillePulse : accès à la corbeille requis")
         } else if total <= 0 {
-            button.toolTip = "Corbeille vide"
+            button.toolTip = String(localized: "Corbeille vide")
         } else if overflowing {
-            button.toolTip = "Corbeille en débordement : \(formatBytes(total))"
+            button.toolTip = String(localized: "Corbeille en débordement : \(formatBytes(total))")
         } else {
-            button.toolTip = "Corbeille : \(formatBytes(total))"
+            button.toolTip = String(localized: "Corbeille : \(formatBytes(total))")
         }
     }
 
@@ -55,7 +55,7 @@ final class StatusBarController: NSObject {
         if red {
             configuration = configuration.applying(.init(paletteColors: [.systemRed]))
         }
-        let image = NSImage(systemSymbolName: filled ? "trash.fill" : "trash", accessibilityDescription: "Corbeille")?
+        let image = NSImage(systemSymbolName: filled ? "trash.fill" : "trash", accessibilityDescription: String(localized: "Corbeille"))?
             .withSymbolConfiguration(configuration)
         image?.isTemplate = !red
         return image

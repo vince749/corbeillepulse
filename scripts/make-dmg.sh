@@ -13,7 +13,7 @@ trap 'command rm -rf "$work"' EXIT
 mkdir "$work/stage"
 ditto "$app" "$work/stage/CorbeillePulse.app"
 ln -s /Applications "$work/stage/Applications"
-cp -X Resources/Lisez-moi.txt "$work/stage/Lisez-moi.txt"
+cp -X "Resources/Read me - Lisez-moi.txt" "$work/stage/Read me - Lisez-moi.txt"
 
 hdiutil create -quiet -volname "$volume" -srcfolder "$work/stage" -fs APFS -format UDRW -ov "$work/rw.dmg"
 mount=$(hdiutil attach -noverify -noautoopen "$work/rw.dmg" 2>/dev/null | awk -F'\t' '/\/Volumes\//{print $NF}')
@@ -33,7 +33,7 @@ with timeout of 30 seconds
       set icon size of viewOptions to 112
       set position of item "CorbeillePulse.app" of container window to {170, 170}
       set position of item "Applications" of container window to {470, 170}
-      set position of item "Lisez-moi.txt" of container window to {320, 320}
+      set position of item "Read me - Lisez-moi.txt" of container window to {320, 320}
       update without registering applications
       delay 2
       close
