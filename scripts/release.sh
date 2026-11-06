@@ -39,7 +39,8 @@ glab-nt release create "$tag" "$dmg#CorbeillePulse-$version.dmg" -R "$gitlab_pro
 # Stable path, so .../releases/permalink/latest/downloads/CorbeillePulse.dmg always serves the latest DMG.
 project=${gitlab_project//\//%2F}
 link_id=$(glab-nt api "projects/$project/releases/$tag/assets/links" | python3 -c 'import json,sys; print(json.load(sys.stdin)[0]["id"])')
-glab-nt api -X PUT "projects/$project/releases/$tag/assets/links/$link_id" -f direct_asset_path=/CorbeillePulse.dmg >/dev/null
+glab-nt api -X PUT "projects/$project/releases/$tag/assets/links/$link_id" \
+    -f name="CorbeillePulse-$version.dmg" -f direct_asset_path=/CorbeillePulse.dmg -f link_type=package >/dev/null
 
 gh release create "$tag" "$dmg" -R "$github_repo" --verify-tag --title "CorbeillePulse $version" --notes-file "$notes"
 echo "Released $tag"
