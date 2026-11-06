@@ -1,0 +1,10 @@
+CorbeillePulse - installation
+
+Il vous faut un Mac sous macOS 14 (Sonoma) ou plus récent, Apple Silicon ou Intel.
+
+1. Glissez CorbeillePulse dans le dossier Applications.
+2. Ouvrez-la. macOS la bloque, car elle n'est pas notariée par Apple.
+3. Allez dans Réglages Système > Confidentialité et sécurité, puis cliquez sur « Ouvrir quand même ».
+4. Autorisez l'accès à Finder quand macOS le demande : c'est ce qui permet de lire la Corbeille.
+
+Facultatif : pour que la taille des dossiers soit comptée, ajoutez CorbeillePulse dans Réglages Système > Confidentialité et sécurité > Accès complet au disque.
