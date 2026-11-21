@@ -42,6 +42,17 @@ with timeout of 30 seconds
 end timeout
 APPLESCRIPT
 
+# While the window is open, anything pasted or dropped into it lands in the DMG
+# (a stray "Pasted ... .textClipping" shipped in 1.2.0): remove whatever is not ours.
+for entry in "$mount"/* "$mount"/.[!.]*; do
+    [ -e "$entry" ] || [ -L "$entry" ] || continue
+    case "$(basename "$entry")" in
+        CorbeillePulse.app | Applications | "Read me - Lisez-moi.txt" | .DS_Store) ;;
+        .fseventsd) command rm -rf "$entry" ;;
+        *) echo "warning: removing unexpected $(basename "$entry") from the DMG" >&2; command rm -rf "$entry" ;;
+    esac
+done
+
 sync
 hdiutil detach -quiet "$mount" || { sleep 3; hdiutil detach "$mount"; }
 hdiutil convert -quiet "$work/rw.dmg" -format ULFO -ov -o "$output"
