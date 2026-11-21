@@ -32,7 +32,7 @@ struct PanelView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                if store.accessBlocked { accessBanner }
+                problemBanner
                 gauge
                 stats
                 Button(role: .destructive, action: onEmpty) {
@@ -46,6 +46,8 @@ struct PanelView: View {
                 Divider()
                 intensitySection
                 Divider()
+                visibilitySection
+                Divider()
                 contentsSection
             }
             .padding(20)
@@ -53,25 +55,65 @@ struct PanelView: View {
         .frame(minWidth: 390, minHeight: 520)
     }
 
-    private var accessBanner: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label("Accès à la corbeille requis", systemImage: "exclamationmark.shield")
-                .font(.headline)
-                .foregroundStyle(.orange)
-            Text("macOS protège la corbeille. Autorise CorbeillePulse à contrôler le Finder dans Réglages Système › Confidentialité et sécurité › Automatisation.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            Button("Ouvrir les réglages") {
-                if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation") {
-                    NSWorkspace.shared.open(url)
+    @ViewBuilder private var problemBanner: some View {
+        if store.accessBlocked {
+            banner("Accès à la corbeille requis", systemImage: "exclamationmark.shield") {
+                bannerText("macOS protège la corbeille. Autorise CorbeillePulse à contrôler le Finder dans Réglages Système › Confidentialité et sécurité › Automatisation.")
+                settingsButton("Ouvrir les réglages", pane: "Privacy_Automation")
+            }
+        } else if store.scanProblem == .waitingForFinder {
+            banner("En attente du Finder", systemImage: "hourglass") {
+                bannerText("Le Finder ne répond pas. macOS attend sans doute que tu autorises CorbeillePulse à contrôler le Finder : cherche la fenêtre de demande, ou autorise-la dans Réglages Système › Confidentialité et sécurité › Automatisation.")
+                bannerText("Autre solution : accorde à CorbeillePulse l'accès complet au disque, elle lit alors la corbeille sans passer par le Finder.")
+                HStack {
+                    settingsButton("Ouvrir Automatisation", pane: "Privacy_Automation")
+                    settingsButton("Ouvrir Accès complet au disque", pane: "Privacy_AllFiles")
                 }
             }
+        } else if case .finderError(let message) = store.scanProblem {
+            banner("Lecture de la corbeille impossible", systemImage: "exclamationmark.triangle") {
+                bannerText("Le Finder a renvoyé une erreur. CorbeillePulse réessaie toutes les quelques secondes. Avec l'accès complet au disque, elle lit la corbeille sans passer par le Finder.")
+                if !message.isEmpty {
+                    Text(verbatim: message)
+                        .font(.caption.monospaced())
+                        .foregroundStyle(.secondary)
+                        .textSelection(.enabled)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                settingsButton("Ouvrir Accès complet au disque", pane: "Privacy_AllFiles")
+            }
+        }
+    }
+
+    private func banner<Content: View>(
+        _ title: LocalizedStringKey, systemImage: String, @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label(title, systemImage: systemImage)
+                .font(.headline)
+                .foregroundStyle(.orange)
+            content()
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(.orange.opacity(0.4)))
+    }
+
+    private func bannerText(_ text: LocalizedStringKey) -> some View {
+        Text(text)
+            .font(.callout)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    /// Opens a pane of System Settings › Privacy & Security.
+    private func settingsButton(_ title: LocalizedStringKey, pane: String) -> some View {
+        Button(title) {
+            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?\(pane)") {
+                NSWorkspace.shared.open(url)
+            }
+        }
     }
 
     private var gauge: some View {
@@ -154,6 +196,29 @@ struct PanelView: View {
             .pickerStyle(.radioGroup)
             .horizontalRadioGroupLayout()
             .labelsHidden()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var visibilitySection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Affichage").font(.headline)
+            Toggle("Masquer du Dock", isOn: $store.hideFromDock)
+            Toggle("Masquer de la barre de menus", isOn: $store.hideFromMenuBar)
+            if store.hideFromDock && store.hideFromMenuBar {
+                Text("CorbeillePulse n'apparaît plus ni dans le Dock ni dans la barre de menus. Pour retrouver cette fenêtre, ouvre-la de nouveau depuis le dossier Applications ou Spotlight.")
+                    .font(.callout)
+                    .foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                Text("Si tu masques les deux, ouvre de nouveau CorbeillePulse depuis le dossier Applications ou Spotlight pour retrouver cette fenêtre.")
+                    .font(.callout)
+                    .foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if store.hideFromMenuBar {
+                Button("Quitter CorbeillePulse") { NSApp.terminate(nil) }
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

@@ -9,7 +9,7 @@ enum Entry {
         let app = NSApplication.shared
         let delegate = AppDelegate()
         app.delegate = delegate
-        app.setActivationPolicy(.regular)
+        app.setActivationPolicy(TrashStore.storedHideFromDock ? .accessory : .regular)
         app.run()
     }
 }
@@ -32,15 +32,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.statusBar?.update()
             self?.overlay?.update()
         }
+        store.onVisibilityChange = { [weak self] in self?.applyVisibility() }
         store.startPolling()
         showWindow()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
+    /// Opening the app again (Finder, Spotlight, `open`) always brings the panel back:
+    /// it is the way in when the app is hidden from both the Dock and the menu bar.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         showWindow()
         return true
+    }
+
+    private func applyVisibility() {
+        statusBar?.setVisible(!store.hideFromMenuBar)
+        let policy: NSApplication.ActivationPolicy = store.hideFromDock ? .accessory : .regular
+        guard NSApp.activationPolicy() != policy else { return }
+        NSApp.setActivationPolicy(policy)
+        // Switching policy deactivates the app: bring the panel, where the switch was made, back.
+        DispatchQueue.main.async { [weak self] in self?.showWindow() }
     }
 
     private func showWindow() {

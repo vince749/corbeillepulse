@@ -25,6 +25,8 @@ Requires macOS 14 (Sonoma) or later, on Apple Silicon or Intel. Nothing else to 
 - **Your own limit:** from 1 MB to 50 GB, 100 MB by default.
 - **Three overflow styles:** Light, Progressive or Dramatic.
 - **Empty Trash** button, with a confirmation that defaults to Cancel.
+- **Hide from the Dock or the menu bar,** or both: opening CorbeillePulse again (from Applications or Spotlight) brings its window back.
+- **Clear warnings** when the Trash cannot be read, for example while macOS is still waiting for you to allow access to Finder, with buttons to the right System Settings pane.
 - **English and French,** following your Mac's language.
 
 The pile is drawn in a transparent window that lets every click through to the Dock and the windows below. It is only on screen while the Trash overflows.

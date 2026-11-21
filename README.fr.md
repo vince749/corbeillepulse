@@ -25,6 +25,8 @@ Il faut macOS 14 (Sonoma) ou plus récent, sur Apple Silicon ou Intel. Rien d'au
 - **Votre limite :** de 1 Mo à 50 Go, 100 Mo par défaut.
 - **Trois styles de débordement :** Léger, Progressif ou Dramatique.
 - **Bouton Vider la corbeille,** avec une confirmation où Entrée annule.
+- **Masquer du Dock ou de la barre de menus,** ou des deux : rouvrir CorbeillePulse (depuis Applications ou Spotlight) ramène sa fenêtre.
+- **Alertes claires** quand la Corbeille ne peut pas être lue, par exemple tant que macOS attend votre autorisation d'accès au Finder, avec un bouton vers le bon panneau des Réglages Système.
 - **Français et anglais,** selon la langue du Mac.
 
 Le tas est dessiné dans une fenêtre transparente qui laisse passer tous les clics vers le Dock et les fenêtres en dessous. Elle n'est à l'écran que pendant un débordement.

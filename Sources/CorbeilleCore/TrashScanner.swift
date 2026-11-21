@@ -104,8 +104,6 @@ public func parseFinderOutput(_ output: String, cache: inout [String: Int64]) ->
 /// Reads `~/.Trash` directly when the app has Full Disk Access. Otherwise macOS denies it,
 /// and the scanner asks Finder instead, which only needs a one-click Automation approval.
 public actor TrashScanner {
-    private enum Source { case fileSystem, finder }
-
     private static let readScript = """
         tell application "Finder"
         \tset theItems to items in trash
@@ -127,19 +125,16 @@ public actor TrashScanner {
         """
 
     private let trashURL: URL
-    private var source = Source.fileSystem
     private var finderSizes: [String: Int64] = [:]
 
     public init(trashURL: URL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")) {
         self.trashURL = trashURL
     }
 
-    /// Throws on a temporary failure: callers should keep showing the last good snapshot.
+    /// Throws when Finder fails or never answers (see `ScanHealth`). The folder is tried first
+    /// on every scan: a denied read is instant, and Full Disk Access granted later is picked up.
     public func scan() async throws -> TrashSnapshot {
-        if source == .fileSystem {
-            if let snapshot = Self.scanFileSystem(trashURL) { return snapshot }
-            source = .finder
-        }
+        if let snapshot = Self.scanFileSystem(trashURL) { return snapshot }
         do {
             let run = try await runAppleScript(Self.readScript, timeout: 25)
             try Self.check(run)

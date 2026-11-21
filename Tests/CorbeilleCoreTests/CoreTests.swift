@@ -113,3 +113,36 @@ func readsTheRealTrash() async throws {
     #expect(!snapshot.accessBlocked)
     print("live trash: \(snapshot.itemCount) items, \(formatBytes(snapshot.totalBytes, units: ByteUnits.english))")
 }
+
+@Test func timeoutsBeforeAnySnapshotMeanWaitingForFinder() {
+    var health = ScanHealth()
+    #expect(health.problem == nil)
+    health.recordFailure(TrashError.timedOut)
+    #expect(health.problem == .waitingForFinder)
+    health.recordFailure(TrashError.timedOut)
+    #expect(health.problem == .waitingForFinder)
+    health.recordSuccess()
+    #expect(health.problem == nil)
+}
+
+@Test func otherFailuresAreNotSilent() {
+    var health = ScanHealth()
+    health.recordFailure(TrashError.scriptFailed("Finder got an error (-10810)"))
+    #expect(health.problem == .finderError("Finder got an error (-10810)"))
+    health.recordFailure(CocoaError(.fileReadNoPermission))
+    #expect(health.problem == .finderError(CocoaError(.fileReadNoPermission).localizedDescription))
+}
+
+@Test func aGoodSnapshotHidesOnlyTransientFailures() {
+    var health = ScanHealth()
+    health.recordSuccess()
+    for _ in 0..<ScanHealth.toleratedFailures {
+        health.recordFailure(TrashError.timedOut)
+        #expect(health.problem == nil)
+    }
+    health.recordFailure(TrashError.timedOut)
+    #expect(health.problem == .waitingForFinder)
+    health.recordSuccess()
+    health.recordFailure(TrashError.timedOut)
+    #expect(health.problem == nil)
+}
