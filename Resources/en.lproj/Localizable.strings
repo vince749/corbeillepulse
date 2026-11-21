@@ -33,6 +33,7 @@
 "Le Finder ne répond pas. macOS attend sans doute que tu autorises CorbeillePulse à contrôler le Finder : cherche la fenêtre de demande, ou autorise-la dans Réglages Système › Confidentialité et sécurité › Automatisation." = "Finder is not answering. macOS is probably waiting for you to allow CorbeillePulse to control Finder: look for the request dialog, or allow it in System Settings › Privacy & Security › Automation.";
 "Lecture de la corbeille impossible" = "Cannot read the Trash";
 "Lecture de la corbeille impossible…" = "Cannot read the Trash…";
+"Lecture de la corbeille…" = "Reading the Trash…";
 "Léger" = "Light";
 "Masquer CorbeillePulse" = "Hide CorbeillePulse";
 "Masquer de la barre de menus" = "Hide from the menu bar";

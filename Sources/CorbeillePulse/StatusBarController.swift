@@ -71,6 +71,8 @@ final class StatusBarController: NSObject {
             button.toolTip = String(localized: "CorbeillePulse : en attente du Finder")
         } else if store.scanProblem != nil {
             button.toolTip = String(localized: "CorbeillePulse : lecture de la corbeille impossible")
+        } else if store.snapshot == nil {
+            button.toolTip = String(localized: "Lecture de la corbeille…")
         } else if total <= 0 {
             button.toolTip = String(localized: "Corbeille vide")
         } else if overflowing {

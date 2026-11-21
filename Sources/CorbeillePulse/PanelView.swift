@@ -13,6 +13,7 @@ struct PanelView: View {
     }
 
     private var statusLabel: String {
+        if store.snapshot == nil { return String(localized: "Lecture de la corbeille…") }
         if store.totalBytes <= 0 { return String(localized: "Corbeille vide") }
         if store.fillRatio >= 1 { return String(localized: "Débordement !") }
         if store.fillRatio >= 0.75 { return String(localized: "Presque pleine") }
@@ -232,8 +233,9 @@ struct PanelView: View {
             Text("Contenu").font(.headline)
             if store.items.isEmpty {
                 VStack(spacing: 8) {
-                    Image(systemName: "trash").font(.largeTitle).foregroundStyle(.tertiary)
-                    Text("La corbeille est vide.").font(.callout).foregroundStyle(.secondary)
+                    Image(systemName: store.snapshot == nil ? "hourglass" : "trash").font(.largeTitle).foregroundStyle(.tertiary)
+                    Text(store.snapshot == nil ? "Lecture de la corbeille…" : "La corbeille est vide.")
+                        .font(.callout).foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 24)
