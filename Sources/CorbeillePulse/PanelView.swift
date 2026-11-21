@@ -4,38 +4,17 @@ import SwiftUI
 
 struct PanelView: View {
     @Bindable var store: TrashStore
+    let updates: UpdateChecker
     let onEmpty: () -> Void
-
-    private var gaugeColor: Color {
-        if store.fillRatio >= 1 { return Color(hex: 0xEF4444) }
-        if store.fillRatio >= 0.75 { return Color(hex: 0xF59E0B) }
-        return Color(hex: 0x22C55E)
-    }
-
-    private var statusLabel: String {
-        if store.snapshot == nil { return String(localized: "Lecture de la corbeille…") }
-        if store.totalBytes <= 0 { return String(localized: "Corbeille vide") }
-        if store.fillRatio >= 1 { return String(localized: "Débordement !") }
-        if store.fillRatio >= 0.75 { return String(localized: "Presque pleine") }
-        return String(localized: "En remplissage")
-    }
-
-    private var overflowPercent: Int {
-        store.fillRatio > 1 ? Int(((store.fillRatio - 1) * 100).rounded()) : 0
-    }
-
-    private var sliderPosition: Binding<Double> {
-        Binding(
-            get: { Threshold.sliderPosition(forBytes: store.thresholdBytes) },
-            set: { store.thresholdBytes = Threshold.bytes(forSliderPosition: $0) })
-    }
+    let onAbout: () -> Void
 
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
                 problemBanner
-                gauge
-                stats
+                UpdateBanner(updates: updates)
+                GaugeView(store: store)
+                StatsRow(store: store)
                 Button(role: .destructive, action: onEmpty) {
                     Label(store.isEmptying ? String(localized: "Vidage…") : String(localized: "Vider la corbeille"), systemImage: "trash")
                         .frame(maxWidth: .infinity)
@@ -50,6 +29,9 @@ struct PanelView: View {
                 visibilitySection
                 Divider()
                 contentsSection
+                Button("À propos de CorbeillePulse", action: onAbout)
+                    .buttonStyle(.link)
+                    .font(.callout)
             }
             .padding(20)
         }
@@ -117,58 +99,6 @@ struct PanelView: View {
         }
     }
 
-    private var gauge: some View {
-        VStack(spacing: 10) {
-            ZStack {
-                Circle().stroke(.gray.opacity(0.2), lineWidth: 14)
-                Circle()
-                    .trim(from: 0, to: min(store.fillRatio, 1))
-                    .stroke(gaugeColor, style: StrokeStyle(lineWidth: 14, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                    .animation(.easeInOut(duration: 0.6), value: store.fillRatio)
-                VStack(spacing: 4) {
-                    Image(systemName: "trash").font(.title2).foregroundStyle(gaugeColor)
-                    Text(formatBytes(store.totalBytes))
-                        .font(.system(size: 26, weight: .bold))
-                        .monospacedDigit()
-                    Text("sur \(formatBytes(store.thresholdBytes))")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .frame(width: 166, height: 166)
-            .padding(7)
-
-            VStack(spacing: 2) {
-                Text(statusLabel).font(.headline).foregroundStyle(gaugeColor)
-                if overflowPercent > 0 {
-                    Text("\(overflowPercent) % au-dessus du seuil")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                }
-            }
-        }
-    }
-
-    private var stats: some View {
-        HStack(spacing: 8) {
-            stat("Taille", formatBytes(store.totalBytes))
-            Divider()
-            stat("Éléments", String(store.itemCount))
-            Divider()
-            stat("Seuil", formatBytes(store.thresholdBytes))
-        }
-        .fixedSize(horizontal: false, vertical: true)
-    }
-
-    private func stat(_ label: LocalizedStringKey, _ value: String) -> some View {
-        VStack(spacing: 2) {
-            Text(value).font(.title3.weight(.semibold)).monospacedDigit()
-            Text(label).font(.callout).foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-    }
-
     private var thresholdSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
@@ -178,7 +108,7 @@ struct PanelView: View {
                     .font(.callout.monospaced())
                     .foregroundStyle(.secondary)
             }
-            Slider(value: sliderPosition, in: 0...Threshold.sliderMax)
+            Slider(value: $store.sliderPosition, in: 0...Threshold.sliderMax)
             Text("En dessous de ce seuil, rien ne s'affiche. Au-delà, la corbeille déborde par-dessus le Dock.")
                 .font(.callout)
                 .foregroundStyle(.tertiary)

@@ -17,16 +17,20 @@ enum Entry {
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let store = TrashStore()
+    private let updates = UpdateChecker()
     private var window: NSWindow?
+    private var aboutWindow: NSWindow?
     private var statusBar: StatusBarController?
     private var overlay: OverlayController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.mainMenu = makeMainMenu()
         statusBar = StatusBarController(
-            store: store,
+            store: store, updates: updates,
             onOpen: { [weak self] in self?.showWindow() },
-            onEmpty: { [weak self] in self?.confirmAndEmpty() })
+            onEmpty: { [weak self] in self?.confirmAndEmpty() },
+            onAbout: { [weak self] in self?.showAbout() },
+            onCheckForUpdates: { [weak self] in self?.checkForUpdates() })
         overlay = OverlayController(store: store)
         store.onChange = { [weak self] in
             self?.statusBar?.update()
@@ -34,6 +38,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         store.onVisibilityChange = { [weak self] in self?.applyVisibility() }
         store.startPolling()
+        updates.startAutomaticChecks()
         showWindow()
     }
 
@@ -57,7 +62,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func showWindow() {
         if window == nil {
-            let view = PanelView(store: store, onEmpty: { [weak self] in self?.confirmAndEmpty() })
+            let view = PanelView(
+                store: store, updates: updates,
+                onEmpty: { [weak self] in self?.confirmAndEmpty() },
+                onAbout: { [weak self] in self?.showAbout() })
             let created = NSWindow(contentViewController: NSHostingController(rootView: view))
             created.title = String(localized: "Corbeille")
             created.styleMask = [.titled, .closable, .miniaturizable, .resizable]
@@ -69,6 +77,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    @objc private func showAbout() {
+        if aboutWindow == nil {
+            let created = NSWindow(contentViewController: NSHostingController(rootView: AboutView(updates: updates)))
+            created.title = String(localized: "À propos de CorbeillePulse")
+            created.styleMask = [.titled, .closable]
+            created.isReleasedWhenClosed = false
+            created.center()
+            aboutWindow = created
+        }
+        aboutWindow?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    /// Checking by hand shows the answer in the About window.
+    @objc private func checkForUpdates() {
+        showAbout()
+        Task { await updates.check() }
     }
 
     private func confirmAndEmpty() {
@@ -110,6 +137,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let appItem = NSMenuItem()
         let appMenu = NSMenu()
+        appMenu.addItem(withTitle: String(localized: "À propos de CorbeillePulse"), action: #selector(showAbout), keyEquivalent: "").target = self
+        appMenu.addItem(withTitle: String(localized: "Rechercher les mises à jour…"), action: #selector(checkForUpdates), keyEquivalent: "").target = self
+        appMenu.addItem(.separator())
         appMenu.addItem(withTitle: String(localized: "Masquer CorbeillePulse"), action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: String(localized: "Quitter CorbeillePulse"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")

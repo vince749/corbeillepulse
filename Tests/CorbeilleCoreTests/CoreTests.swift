@@ -146,3 +146,22 @@ func readsTheRealTrash() async throws {
     health.recordFailure(TrashError.timedOut)
     #expect(health.problem == nil)
 }
+
+@Test func comparesVersionsNumerically() {
+    #expect(AppVersion("1.10.0")! > AppVersion("1.9.0")!)
+    #expect(AppVersion("v1.2.0")! == AppVersion("1.2")!)
+    #expect(AppVersion("1.1.0")! < AppVersion("v1.1.1")!)
+    #expect(AppVersion("2")! > AppVersion("1.99.99")!)
+    #expect(AppVersion("1.2.0")?.description == "1.2.0")
+    #expect(AppVersion("") == nil)
+    #expect(AppVersion("1.2-beta") == nil)
+    #expect(AppVersion("nightly") == nil)
+}
+
+@Test func decodesGitHubReleaseAndComparesWithInstalledVersion() throws {
+    let json = Data(#"{"tag_name":"v1.2.0","html_url":"https://github.com/vince749/corbeillepulse/releases/tag/v1.2.0","name":"x"}"#.utf8)
+    let release = try JSONDecoder().decode(GitHubRelease.self, from: json)
+    #expect(release.isNewer(than: AppVersion("1.1.0")!))
+    #expect(!release.isNewer(than: AppVersion("1.2.0")!))
+    #expect(!release.isNewer(than: AppVersion("1.3.0")!))
+}

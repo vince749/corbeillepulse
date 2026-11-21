@@ -20,13 +20,14 @@ Requires macOS 14 (Sonoma) or later, on Apple Silicon or Intel. Nothing else to 
 
 ## Features
 
-- **Menu bar icon:** an empty bin, a full bin, or a red bin with the size once the Trash overflows. Its menu opens the app or empties the Trash.
+- **Menu bar icon:** an empty bin, a full bin, or a red bin with the size once the Trash overflows. Click it for a compact panel: the gauge, the figures, the limit and overflow style, and Empty Trash.
 - **Control panel:** a fill gauge, the size and number of items, and the largest items in the Trash.
 - **Your own limit:** from 1 MB to 50 GB, 100 MB by default.
 - **Three overflow styles:** Light, Progressive or Dramatic.
 - **Empty Trash** button, with a confirmation that defaults to Cancel.
 - **Hide from the Dock or the menu bar,** or both: opening CorbeillePulse again (from Applications or Spotlight) brings its window back.
 - **Clear warnings** when the Trash cannot be read, for example while macOS is still waiting for you to allow access to Finder, with buttons to the right System Settings pane.
+- **Update check:** CorbeillePulse asks GitHub for a newer release at launch and once a day, and links to it. Check by hand from About CorbeillePulse.
 - **English and French,** following your Mac's language.
 
 The pile is drawn in a transparent window that lets every click through to the Dock and the windows below. It is only on screen while the Trash overflows.

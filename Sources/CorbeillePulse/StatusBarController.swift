@@ -1,33 +1,36 @@
 import AppKit
 import CorbeilleCore
+import SwiftUI
 
 @MainActor
-final class StatusBarController: NSObject {
+final class StatusBarController: NSObject, NSPopoverDelegate {
     /// `nil` while the user hides the app from the menu bar.
     private var item: NSStatusItem?
-    private let menu = NSMenu()
-    private let problemItem = NSMenuItem()
-    private let problemSeparator = NSMenuItem.separator()
+    private let popover = NSPopover()
     private let store: TrashStore
-    private let onOpen: () -> Void
-    private let onEmpty: () -> Void
 
-    init(store: TrashStore, onOpen: @escaping () -> Void, onEmpty: @escaping () -> Void) {
+    init(
+        store: TrashStore, updates: UpdateChecker,
+        onOpen: @escaping () -> Void, onEmpty: @escaping () -> Void,
+        onAbout: @escaping () -> Void, onCheckForUpdates: @escaping () -> Void
+    ) {
         self.store = store
-        self.onOpen = onOpen
-        self.onEmpty = onEmpty
         super.init()
 
-        // Shown only when the Trash cannot be read; it opens the panel, which explains why.
-        problemItem.action = #selector(openClicked)
-        problemItem.target = self
-        problemItem.image = NSImage(systemSymbolName: "exclamationmark.triangle", accessibilityDescription: nil)
-        menu.addItem(problemItem)
-        menu.addItem(problemSeparator)
-        menu.addItem(makeItem(String(localized: "Ouvrir CorbeillePulse"), #selector(openClicked)))
-        menu.addItem(makeItem(String(localized: "Vider la corbeille…"), #selector(emptyClicked)))
-        menu.addItem(.separator())
-        menu.addItem(makeItem(String(localized: "Quitter"), #selector(quitClicked)))
+        // Every action closes the popover first: it would otherwise sit above the window or alert it opens.
+        let view = PopoverView(
+            store: store, updates: updates,
+            onOpenWindow: { [weak self] in self?.closing(onOpen) },
+            onEmpty: { [weak self] in self?.closing(onEmpty) },
+            onAbout: { [weak self] in self?.closing(onAbout) },
+            onCheckForUpdates: { [weak self] in self?.closing(onCheckForUpdates) })
+        let host = NSHostingController(rootView: view)
+        host.sizingOptions = .preferredContentSize
+        popover.contentViewController = host
+        popover.behavior = .transient
+        popover.animates = true
+        popover.delegate = self
+
         setVisible(!store.hideFromMenuBar)
         update()
     }
@@ -35,27 +38,42 @@ final class StatusBarController: NSObject {
     func setVisible(_ visible: Bool) {
         if visible, item == nil {
             let created = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-            created.menu = menu
+            created.button?.target = self
+            created.button?.action = #selector(togglePopover)
             item = created
             update()
         } else if !visible, let existing = item {
+            popover.performClose(nil)
             NSStatusBar.system.removeStatusItem(existing)
             item = nil
         }
     }
 
-    private func makeItem(_ title: String, _ action: Selector) -> NSMenuItem {
-        let menuItem = NSMenuItem(title: title, action: action, keyEquivalent: "")
-        menuItem.target = self
-        return menuItem
+    private func closing(_ action: @escaping () -> Void) {
+        // No closing animation: the action may open a modal alert right away.
+        popover.close()
+        action()
+    }
+
+    @objc private func togglePopover() {
+        guard let button = item?.button else { return }
+        if popover.isShown {
+            popover.performClose(nil)
+            return
+        }
+        // Without the Dock icon the app is not active: activate it so the popover takes key focus
+        // and closes when the user clicks elsewhere.
+        NSApp.activate(ignoringOtherApps: true)
+        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        popover.contentViewController?.view.window?.makeKey()
+        button.highlight(true)
+    }
+
+    func popoverDidClose(_ notification: Notification) {
+        item?.button?.highlight(false)
     }
 
     func update() {
-        let problem = Self.problemTitle(store)
-        problemItem.title = problem ?? ""
-        problemItem.isHidden = problem == nil
-        problemSeparator.isHidden = problem == nil
-
         guard let button = item?.button else { return }
         let total = store.totalBytes
         let overflowing = store.isOverflowing
@@ -82,15 +100,6 @@ final class StatusBarController: NSObject {
         }
     }
 
-    private static func problemTitle(_ store: TrashStore) -> String? {
-        if store.accessBlocked { return String(localized: "Accès à la corbeille requis…") }
-        switch store.scanProblem {
-        case .waitingForFinder: return String(localized: "En attente du Finder…")
-        case .finderError: return String(localized: "Lecture de la corbeille impossible…")
-        case nil: return nil
-        }
-    }
-
     private static func icon(filled: Bool, red: Bool) -> NSImage? {
         var configuration = NSImage.SymbolConfiguration(pointSize: 14, weight: .regular)
         if red {
@@ -102,7 +111,4 @@ final class StatusBarController: NSObject {
         return image
     }
 
-    @objc private func openClicked() { onOpen() }
-    @objc private func emptyClicked() { onEmpty() }
-    @objc private func quitClicked() { NSApp.terminate(nil) }
 }
